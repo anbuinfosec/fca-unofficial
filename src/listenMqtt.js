@@ -314,6 +314,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
                             reaction: delta.deltaMessageReaction.reaction,
                             senderID: delta.deltaMessageReaction.senderId.toString(),
                             userID: delta.deltaMessageReaction.userId.toString(),
+														reactionTimestamp: delta.deltaMessageReaction.reactionTimestamp,
                         });
                     })();
                 } else if (
@@ -334,7 +335,7 @@ function parseDelta(defaultFuncs, api, ctx, globalCallback, v) {
                             senderID: delta.deltaRecallMessageData.senderID.toString(),
                             deletionTimestamp:
                                 delta.deltaRecallMessageData.deletionTimestamp,
-                            timestamp: delta.deltaRecallMessageData.timestamp,
+                            timestamp: delta.deltaRecallMessageData.messageTimestamp,
                         });
                     })();
                 } else if (delta.deltaMessageReply) {
