@@ -1,289 +1,395 @@
-This repo is a fork from main repo and will usually have new features bundled faster than main repo (and maybe bundle some bugs, too).
-
 # Unofficial Facebook Chat API
 
 <a href="https://www.npmjs.com/package/@anbuinfosec/fca-unofficial"><img alt="npm version" src="https://img.shields.io/npm/v/@anbuinfosec/fca-unofficial.svg?style=flat-square"></a>
 <a href="https://www.npmjs.com/package/@anbuinfosec/fca-unofficial"><img src="https://img.shields.io/npm/dm/@anbuinfosec/fca-unofficial.svg?style=flat-square" alt="npm downloads"></a>
+
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-Facebook now has an official API for chat bots [here](https://developers.facebook.com/docs/messenger-platform).
+## 📦 Install & Usage (Fork)
 
-This API is the only way to automate chat functionalities on a user account. We do this by emulating the browser. This means doing the exact same GET/POST requests and tricking Facebook into thinking we're accessing the website normally. Because we're doing it this way, this API won't work with an auth token but requires the credentials of a Facebook account.
+This is a maintained fork of the original `@anbuinfosec/fca-unofficial` Messenger API, adapted for my **Chika Shirogane** bot and compatible with **GoatBot-V2** (with modified source).
 
-_Disclaimer_: We are not responsible if your account gets banned for spammy activities such as sending lots of messages to people you don't know, sending messages very quickly, sending spammy looking URLs, logging in and out very quickly... Be responsible Facebook citizens.
-
-See [below](#projects-using-this-api) for projects using this API.
-
-See the [full changelog](/CHANGELOG.md) for release details.
-
-## Install
-
-If you just want to use @anbuinfosec/fca-unofficial, you should use this command:
-
+### Install directly from GitHub
 ```bash
 npm install @anbuinfosec/fca-unofficial
 ```
 
-It will download @anbuinfosec/fca-unofficial from NPM repositories
-
-### Bleeding edge
-
-If you want to use bleeding edge (directly from github) to test new features or submit bug report, this is the command for you:
-
-```bash
-npm install anbuinfosec/fca-unofficial
+Or add to your `package.json`:
+```json
+"dependencies": {
+    "@anbuinfosec/fca-unofficial": "^1.4.0"
+}
 ```
 
-## Testing your bots
-
-If you want to test your bots without creating another account on Facebook, you can use [Facebook Whitehat Accounts](https://www.facebook.com/whitehat/accounts/).
-
-## Example Usage
-
-```javascript
-const login = require("@anbuinfosec/fca-unofficial");
-
-// Create simple echo bot
-login({ email: "FB_EMAIL", password: "FB_PASSWORD" }, (err, api) => {
-    if (err) return console.error(err);
-
-    api.listenMqtt((err, message) => {
-        api.sendMessage(message.body, message.threadID);
-    });
-});
-```
-
-Result:
-
-<img width="517" alt="screen shot 2016-11-04 at 14 36 00" src="https://cloud.githubusercontent.com/assets/4534692/20023545/f8c24130-a29d-11e6-9ef7-47568bdbc1f2.png">
-
-## Documentation
-
--   [`login`](DOCS.md#login)
--   [`api.addUserToGroup`](DOCS.md#addUserToGroup)
--   [`api.changeAdminStatus`](DOCS.md#changeAdminStatus)
--   [`api.changeApprovalMode`](DOCS.md#changeApprovalMode)
--   [`api.changeArchivedStatus`](DOCS.md#changeArchivedStatus)
--   [`api.changeBlockedStatus`](DOCS.md#changeBlockedStatus)
--   [`api.changeGroupImage`](DOCS.md#changeGroupImage)
--   [`api.changeNickname`](DOCS.md#changeNickname)
--   [`api.changeThreadColor`](DOCS.md#changeThreadColor)
--   [`api.changeThreadEmoji`](DOCS.md#changeThreadEmoji)
--   [`api.createPoll`](DOCS.md#createPoll)
--   [`api.deleteMessage`](DOCS.md#deleteMessage)
--   [`api.deleteThread`](DOCS.md#deleteThread)
--   [`api.forwardAttachment`](DOCS.md#forwardAttachment)
--   [`api.getAppState`](DOCS.md#getAppState)
--   [`api.getCurrentUserID`](DOCS.md#getCurrentUserID)
--   [`api.getFriendsList`](DOCS.md#getFriendsList)
--   [`api.getThreadHistory`](DOCS.md#getThreadHistory)
--   [`api.getThreadInfo`](DOCS.md#getThreadInfo)
--   [`api.getThreadList`](DOCS.md#getThreadList)
--   [`api.getThreadPictures`](DOCS.md#getThreadPictures)
--   [`api.getUserID`](DOCS.md#getUserID)
--   [`api.getUserInfo`](DOCS.md#getUserInfo)
--   [`api.handleMessageRequest`](DOCS.md#handleMessageRequest)
--   [`api.listen`](DOCS.md#listen)
--   [`api.listenMqtt`](DOCS.md#listenMqtt)
--   [`api.logout`](DOCS.md#logout)
--   [`api.markAsRead`](DOCS.md#markAsRead)
--   [`api.markAsReadAll`](DOCS.md#markAsReadAll)
--   [`api.muteThread`](DOCS.md#muteThread)
--   [`api.removeUserFromGroup`](DOCS.md#removeUserFromGroup)
--   [`api.resolvePhotoUrl`](DOCS.md#resolvePhotoUrl)
--   [`api.searchForThread`](DOCS.md#searchForThread)
--   [`api.sendMessage`](DOCS.md#sendMessage)
--   [`api.sendTypingIndicator`](DOCS.md#sendTypingIndicator)
--   [`api.setMessageReaction`](DOCS.md#setMessageReaction)
--   [`api.setOptions`](DOCS.md#setOptions)
--   [`api.setTitle`](DOCS.md#setTitle)
--   [`api.unsendMessage`](DOCS.md#unsendMessage)
-
-## Main Functionality
-
-### Sending a message
-
-#### api.sendMessage(message, threadID[, callback][, messageid])
-
-Various types of message can be sent:
-
--   _Regular:_ set field `body` to the desired message as a string.
--   _Sticker:_ set a field `sticker` to the desired sticker ID.
--   _File or image:_ Set field `attachment` to a readable stream or an array of readable streams.
--   _URL:_ set a field `url` to the desired URL.
--   _Emoji:_ set field `emoji` to the desired emoji as a string and set field `emojiSize` with size of the emoji (`small`, `medium`, `large`)
-
-Note that a message can only be a regular message (which can be empty) and optionally one of the following: a sticker, an attachment or a url.
-
-**Tip**: to find your own ID, you can look inside the cookies. The `userID` is under the name `c_user`.
-
-**Example (Basic Message)**
-
+### Usage
+Import and use as you would the main module:
 ```js
-const login = require("@anbuinfosec/fca-unofficial");
-
-login({ email: "FB_EMAIL", password: "FB_PASSWORD" }, (err, api) => {
-    if (err) return console.error(err);
-
-    var yourID = "000000000000000";
-    var msg = "Hey!";
-    api.sendMessage(msg, yourID);
-});
+const login = require('@anbuinfosec/fca-unofficial');
+(async () => {
+  const api = await login({ appState: require('./appstate.json') });
+  // ...
+})();
 ```
 
-**Example (File upload)**
+### About this fork
+- Based on the main [@anbuinfosec/fca-unofficial](https://github.com/anbuinfosec/fca-unofficial) source
+- Adapted for Chika Shirogane bot and GoatBot-V2 integration
+- Includes enhancements, async/await support, and compatibility fixes
 
+---
+---
+
+# @anbuinfosec/fca-unofficial v3.0.0 – Advanced Core Release
+
+Modern, safe, production‑ready Messenger (Facebook Chat) API layer with integrated secure login (credentials + 2FA), adaptive session & connection resilience, delivery reliability safeguards, memory protection, and rich runtime metrics. Promise + callback compatible, TypeScript typed, minimal friction.
+
+---
+## ✅ Core Value
+| Pillar | What You Get |
+|--------|--------------|
+| Integrated Secure Login | Username / Password / TOTP 2FA → stable appstate generation & reuse |
+| Session Resilience | Anchored User‑Agent continuity, adaptive safe refresh, lightweight token poke, periodic recycle |
+| Connection Stability | Adaptive MQTT backoff, idle & ghost detection, layered post-refresh health probes, synthetic keepalives |
+| Delivery Reliability | Multi-path message send fallback (MQTT → HTTP → direct) + delivery receipt timeout suppression |
+| Memory Guard | Bounded queues, edit TTL sweeps, controlled resend limits |
+| Observability | Health + memory + delivery metrics (`api.getHealthMetrics()`, `api.getMemoryMetrics()`) |
+| Edit Safety | Pending edit buffer, ACK watchdog, p95 ACK latency tracking |
+| Type Definitions | First-class `index.d.ts` with modern Promise signatures |
+
+---
+## 🔄 What Changed in 3.0.0
+Major version signals maturity & consolidation. No breaking public API changes versus late 2.1.x – upgrade is drop‑in. Temporary diagnostic harness removed; internal instrumentation formalized. Delivery receipt timeouts now intelligently retried & optionally auto-suppressed to protect outbound responsiveness.
+
+---
+## 🚀 Quick Start (Appstate Preferred)
 ```js
-const login = require("@anbuinfosec/fca-unofficial");
+const login = require('@anbuinfosec/fca-unofficial');
 
-login({ email: "FB_EMAIL", password: "FB_PASSWORD" }, (err, api) => {
+(async () => {
+  const api = await login({ appState: require('./appstate.json') });
+  console.log('Logged in as', api.getCurrentUserID());
+  api.listen((err, evt) => {
+    if (err) return console.error('Listen error:', err);
+    if (evt.body) api.sendMessage('Echo: ' + evt.body, evt.threadID);
+  });
+})();
+```
+
+### Credentials + 2FA Flow
+```js
+const login = require('@anbuinfosec/fca-unofficial');
+(async () => {
+  const api = await login({
+    email: process.env.FB_EMAIL,
+    password: process.env.FB_PASS,
+    twofactor: process.env.FB_2FA_SECRET // optional TOTP secret
+  });
+  api.listen((err, msg) => {
     if (err) return console.error(err);
-
-    // Note this example uploads an image called image.jpg
-    var yourID = "000000000000000";
-    var msg = {
-        body: "Hey!",
-        attachment: fs.createReadStream(__dirname + "/image.jpg"),
-    };
-    api.sendMessage(msg, yourID);
-});
+    if (msg.body === 'ping') api.sendMessage('pong', msg.threadID);
+  });
+})();
 ```
 
 ---
-
-### Saving session.
-
-To avoid logging in every time you should save AppState (cookies etc.) to a file, then you can use it without having password in your scripts.
-
-**Example**
-
+## 🧪 Key Runtime APIs
 ```js
-const fs = require("fs");
-const login = require("@anbuinfosec/fca-unofficial");
-
-var credentials = { email: "FB_EMAIL", password: "FB_PASSWORD" };
-
-login(credentials, (err, api) => {
-    if (err) return console.error(err);
-
-    fs.writeFileSync("appstate.json", JSON.stringify(api.getAppState()));
-});
+api.setEditOptions({ maxPendingEdits, editTTLms, ackTimeoutMs, maxResendAttempts });
+api.setBackoffOptions({ base, factor, max, jitter });
+api.enableLazyPreflight(true);       // Skip heavy validation if recent success
+api.getHealthMetrics();              // uptime, reconnects, ack latency, delivery stats
+api.getMemoryMetrics();              // queue sizes & guard counters
 ```
 
-Alternative: Use [c3c-fbstate](https://github.com/lequanglam/c3c-fbstate) to get fbstate.json (appstate.json)
+### Monitoring Snippet
+```js
+setInterval(() => {
+  const h = api.getHealthMetrics();
+  const m = api.getMemoryMetrics();
+  console.log('[HEALTH]', h?.status, 'acks', h?.ackCount, 'p95Ack', h?.p95AckLatencyMs);
+  console.log('[DELIVERY]', {
+    attempts: h?.deliveryAttempts,
+    success: h?.deliverySuccess,
+    failed: h?.deliveryFailed,
+    timeouts: h?.deliveryTimeouts,
+    disabledSince: h?.deliveryDisabledSince
+  });
+  console.log('[MEM]', m);
+}, 60000);
+```
+
+---
+## 🛡️ Safety & Stability Architecture
+| Layer | Mechanism | Purpose |
+|-------|-----------|---------|
+| UA Continuity | Single anchored fingerprint | Avoid heuristic expiry & drift |
+| Adaptive Refresh | Risk-aware timing bands | Token longevity without bursts |
+| Lightweight Poke | Subtle `fb_dtsg` renewal | Keeps session warm quietly |
+| Collision Guard | 45m spacing window | Prevent clustered maintenance events |
+| Idle / Ghost Probe | Timed silent detection | Force reconnect on stale sockets |
+| Periodic Recycle | Randomized (~6h ±30m) | Pre-empt silent degradation |
+| Backoff Strategy | Exponential + jitter | Graceful network recovery |
+| Delivery Suppression | Disable after repeated timeouts | Preserve send latency |
+
+Disable heavy preflight if embedding inside a framework already doing checks:
+```js
+await login({ appState }, { disablePreflight: true });
+```
+
+---
+## 🛰️ MQTT Enhancements (Since 2.1.x)
+- Adaptive reconnect curve (caps 5m)
+- Layered post-refresh probes (1s / 10s / 30s)
+- Synthetic randomized keepalives (55–75s)
+- Structured error classification feeding metrics
+
+---
+## ✉️ Delivery Reliability
+- Multi-path send fallback (MQTT publish → HTTP send → direct fallback)
+- Per-attempt timeout & retry for message delivery receipts
+- Automatic classification of transient timeouts (ETIMEDOUT / ECONNRESET / EAI_AGAIN)
+- Adaptive suppression of delivery receipt calls when environment unstable (protects primary send throughput)
+
+---
+## 🧠 Long Session Best Practices
+1. Prefer appstate reuse (minimal credential logins).
+2. Preserve `persistent-device.json` (only delete if forced challenge).
+3. Don’t manually rotate User-Agent – built-in continuity handles it.
+4. Inspect metrics before forcing reconnect; let backoff work.
+5. Keep dependencies updated; review CHANGELOG for operational notes.
+
+---
+## 🐐 Using with GoatBot V2 (Summary)
+| Goal | Steps |
+|------|-------|
+| Generate appstate | Run credential login script → save `appstate.json` → configure GoatBot |
+| Full replacement | Install `@anbuinfosec/fca-unofficial` → shim `fb-chat-api/index.js` exporting module |
+| Direct require swap | Replace `require('fb-chat-api')` with `require('@anbuinfosec/fca-unofficial')` |
+
+Minimal example:
+```js
+const login = require('@anbuinfosec/fca-unofficial');
+(async () => {
+  const api = await login({ appState: require('./appstate.json') });
+  api.listen((err, event) => {
+    if (err) return console.error(err);
+    if (event.body === '!ping') api.sendMessage('pong', event.threadID);
+  });
+})();
+```
+
+---
+## 📚 Documentation Map
+| Resource | Location |
+|----------|----------|
+| Full API Reference | `DOCS.md` |
+| Feature Guides | `docs/*.md` |
+| Configuration Reference | `docs/configuration-reference.md` |
+| Safety Details | `docs/account-safety.md` |
+| Examples | `examples/` |
+
+---
+## � Migrating 2.1.x → 3.0.0
+| Area | Action Needed |
+|------|---------------|
+| Public API | None (fully compatible) |
+| Diagnostics Harness | Removed (no action) |
+| Delivery Metrics | Optionally surface in dashboards |
+| Safety Manager (legacy) | Keep removed / unused |
+
+---
+## 🗂 Previous 2.1.x Highlights (Condensed)
+| Version | Focus | Key Additions |
+|---------|-------|---------------|
+| 2.1.10 | Stabilization | Final 2.1.x meta adjustments |
+| 2.1.8 | Safety Consolidation | Unified orchestrator, collision spacing, recycle suppression |
+| 2.1.7 | Session Longevity | UA continuity, lightweight poke |
+| 2.1.6 | Memory Guard | Queue pruning, edit TTL sweeps |
+| 2.1.5 | Edit Reliability | PendingEdits buffer, ACK watchdog |
+
+Full details remain in `CHANGELOG.md`.
+
+---
+## ⚠️ Disclaimer
+Not affiliated with Facebook. Use responsibly and comply with platform terms & local laws.
+
+---
+## 🤝 Contributing
+Focused PRs improving stability, safety heuristics, protocol coverage, or typings are welcome.
 
 ---
 
-### Listening to a chat
+# 📋 API Methods Quick Reference & Code Examples
 
-#### api.listen(callback)
-
-Listen watches for messages sent in a chat. By default this won't receive events (joining/leaving a chat, title change etc…) but it can be activated with `api.setOptions({listenEvents: true})`. This will by default ignore messages sent by the current account, you can enable listening to your own messages with `api.setOptions({selfListen: true})`.
-
-**Example**
+## Login Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `fcaLogin()` | Advanced login with ID/pass/2FA | `await fcaLogin({username, password, twofactor})` |
+| `login()` | Traditional login | `login({email, password}, callback)` |
 
 ```js
-const fs = require("fs");
-const login = require("@anbuinfosec/fca-unofficial");
-
-// Simple echo bot. It will repeat everything that you say.
-// Will stop when you say '/stop'
-login(
-    { appState: JSON.parse(fs.readFileSync("appstate.json", "utf8")) },
-    (err, api) => {
-        if (err) return console.error(err);
-
-        api.setOptions({ listenEvents: true });
-
-        var stopListening = api.listenMqtt((err, event) => {
-            if (err) return console.error(err);
-
-            api.markAsRead(event.threadID, (err) => {
-                if (err) console.error(err);
-            });
-
-            switch (event.type) {
-                case "message":
-                    if (event.body === "/stop") {
-                        api.sendMessage("Goodbye…", event.threadID);
-                        return stopListening();
-                    }
-                    api.sendMessage("TEST BOT: " + event.body, event.threadID);
-                    break;
-                case "event":
-                    console.log(event);
-                    break;
-            }
-        });
-    }
-);
+// Login with appstate
+const login = require('@anbuinfosec/fca-unofficial');
+(async () => {
+  const api = await login({ appState: require('./appstate.json') });
+  api.listen((err, evt) => {
+    if (err) return console.error(err);
+    if (evt.body) api.sendMessage('Echo: ' + evt.body, evt.threadID);
+  });
+})();
 ```
 
-## FAQS
+## Message Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `sendMessage()` | Send text/media message | `api.sendMessage('Hello!', threadID)` |
+| `sendMessageMqtt()` | Send message via MQTT (faster) | `api.sendMessageMqtt('Hello!', threadID)` |
+| `editMessage()` | Edit existing message | `api.editMessage('New text', messageID)` |
+| `unsendMessage()` | Delete/unsend message | `api.unsendMessage(messageID)` |
+| `markAsRead()` | Mark messages as read | `api.markAsRead(threadID)` |
+| `markAsDelivered()` | Mark as delivered | `api.markAsDelivered(threadID)` |
+| `markAsReadAll()` | Mark all threads as read | `api.markAsReadAll()` |
+| `markAsSeen()` | Mark as seen | `api.markAsSeen()` |
+| `setMessageReaction()` | React to message | `api.setMessageReaction('😍', messageID)` |
+| `setMessageReactionMqtt()` | React via MQTT | `api.setMessageReactionMqtt('👍', messageID)` |
+| `pinMessage()` | Pin message in chat | `api.pinMessage(messageID)` |
 
-1. How do I run tests?
+```js
+// Send a message
+api.sendMessage('Hello World!', threadID);
 
-    > For tests, create a `test-config.json` file that resembles `example-config.json` and put it in the `test` directory. From the root >directory, run `npm test`.
+// Send with attachment
+const fs = require('fs');
+api.sendMessage({
+  body: 'Check this image!',
+  attachment: fs.createReadStream('./image.jpg')
+}, threadID);
+```
 
-2. Why doesn't `sendMessage` always work when I'm logged in as a page?
+## Thread/Chat Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `getThreadList()` | Get list of chats | `api.getThreadList(20, null, [], callback)` |
+| `getThreadInfo()` | Get chat information | `api.getThreadInfo(threadID, callback)` |
+| `getThreadHistory()` | Get message history | `api.getThreadHistory(threadID, 50, null, callback)` |
+| `getThreadPictures()` | Get shared pictures | `api.getThreadPictures(threadID, 0, 10, callback)` |
+| `searchForThread()` | Search for chats | `api.searchForThread('name', callback)` |
+| `setTitle()` | Change chat name | `api.setTitle('New Name', threadID)` |
+| `changeThreadColor()` | Change chat color | `api.changeThreadColor('#ff0000', threadID)` |
+| `changeThreadEmoji()` | Change chat emoji | `api.changeThreadEmoji('🎉', threadID)` |
+| `changeArchivedStatus()` | Archive/unarchive chat | `api.changeArchivedStatus(threadID, true)` |
+| `muteThread()` | Mute/unmute chat | `api.muteThread(threadID, 3600)` |
+| `deleteThread()` | Delete chat | `api.deleteThread(threadID)` |
 
-    > Pages can't start conversations with users directly; this is to prevent pages from spamming users.
+```js
+// Get thread list
+api.getThreadList(20, null, [], (err, list) => {
+  if (err) return console.error(err);
+  list.forEach(thread => {
+    console.log(`${thread.name}: ${thread.threadID}`);
+  });
+});
+```
 
-3. What do I do when `login` doesn't work?
+## Group Management
+| Method | Description | Example |
+|--------|-------------|---------|
+| `createNewGroup()` | Create new group | `api.createNewGroup([userID1, userID2], 'Name', callback)` |
+| `addUserToGroup()` | Add user to group | `api.addUserToGroup(userID, threadID)` |
+| `removeUserFromGroup()` | Remove user from group | `api.removeUserFromGroup(userID, threadID)` |
+| `changeAdminStatus()` | Make/remove admin | `api.changeAdminStatus(threadID, userID, true)` |
+| `changeGroupImage()` | Change group picture | `api.changeGroupImage(stream, threadID)` |
 
-    > First check that you can login to Facebook using the website. If login approvals are enabled, you might be logging in incorrectly. For how to handle login approvals, read our docs on [`login`](DOCS.md#login).
+## User Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `getUserInfo()` | Get user information | `api.getUserInfo(userID, callback)` |
+| `getCurrentUserID()` | Get bot's user ID | `const myID = api.getCurrentUserID()` |
+| `getUserID()` | Get user ID by username | `api.getUserID('username', callback)` |
+| `getAvatarUser()` | Get user avatar URL | `api.getAvatarUser(userID, callback)` |
+| `changeUsername()` | Change username | `api.changeUsername('new_username')` |
+| `changeBio()` | Change bio | `api.changeBio('New bio')` |
+| `changeAvatar()` | Change profile picture | `api.changeAvatar(stream)` |
+| `changeAvatarV2()` | Change avatar (enhanced) | `api.changeAvatarV2(stream)` |
+| `changeCover()` | Change cover photo | `api.changeCover(stream)` |
+| `changeName()` | Change display name | `api.changeName('New Name')` |
+| `changeNickname()` | Change nickname in chat | `api.changeNickname('Nick', threadID, userID)` |
+| `setProfileGuard()` | Enable/disable profile guard | `api.setProfileGuard(true)` |
 
-4. How can I avoid logging in every time? Can I log into a previous session?
+## Friends & Social
+| Method | Description | Example |
+|--------|-------------|---------|
+| `getFriendsList()` | Get friends list | `api.getFriendsList(callback)` |
+| `handleFriendRequest()` | Accept/decline friend request | `api.handleFriendRequest(userID, true)` |
+| `follow()` | Send friend request/follow | `api.follow(userID)` |
+| `unfriend()` | Remove friend | `api.unfriend(userID)` |
+| `handleMessageRequest()` | Accept/decline message request | `api.handleMessageRequest(threadID, true)` |
+| `changeBlockedStatus()` | Block/unblock user | `api.changeBlockedStatus(userID, true)` |
+| `changeBlockedStatusMqtt()` | Block/unblock via MQTT | `api.changeBlockedStatusMqtt(userID, true)` |
 
-    > We support caching everything relevant for you to bypass login. `api.getAppState()` returns an object that you can save and pass into login as `{appState: mySavedAppState}` instead of the credentials object. If this fails, your session has expired.
+## Posts & Social Media
+| Method | Description | Example |
+|--------|-------------|---------|
+| `createPost()` | Create Facebook post | `api.createPost('Hello Facebook!', callback)` |
+| `createPoll()` | Create poll in group | `api.createPoll('Question?', ['A', 'B'], threadID)` |
+| `setPostReaction()` | React to post | `api.setPostReaction(postID, 'LOVE')` |
+| `setStoryReaction()` | React to story | `api.setStoryReaction(storyID, 'LOVE')` |
+| `sendComment()` | Comment on post | `api.sendComment('Great!', postID)` |
+| `createCommentPost()` | Create comment post | `api.createCommentPost('Comment', postID)` |
 
-5. Do you support sending messages as a page?
+## File & Media Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `uploadAttachment()` | Upload file | `api.uploadAttachment(stream, callback)` |
+| `forwardAttachment()` | Forward attachment | `api.forwardAttachment(attachmentID, threadID)` |
+| `shareContact()` | Share contact | `api.shareContact('Message', userID, threadID)` |
+| `shareLink()` | Share link | `api.shareLink('https://example.com', threadID)` |
+| `resolvePhotoUrl()` | Get photo URL | `api.resolvePhotoUrl(photoID, callback)` |
 
-    > Yes, set the pageID option on login (this doesn't work if you set it using api.setOptions, it affects the login process).
-    >
-    > ```js
-    > login(credentials, {pageID: "000000000000000"}, (err, api) => { … }
-    > ```
+## Search Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `searchStickers()` | Search stickers | `api.searchStickers('happy', callback)` |
+| `getEmojiUrl()` | Get emoji image URL | `api.getEmojiUrl('😍', 'large', callback)` |
 
-6. I'm getting some crazy weird syntax error like `SyntaxError: Unexpected token [`!!!
+## HTTP Methods
+| Method | Description | Example |
+|--------|-------------|---------|
+| `httpGet()` | HTTP GET request | `api.httpGet(url, {}, {}, callback)` |
+| `httpPost()` | HTTP POST request | `api.httpPost(url, data, {}, callback)` |
+| `httpPostFormData()` | POST form data | `api.httpPostFormData(url, formData, {}, callback)` |
 
-    > Please try to update your version of node.js before submitting an issue of this nature. We like to use new language features.
+## Advanced Features
+| Method | Description | Example |
+|--------|-------------|---------|
+| `listenMqtt()` | Listen via MQTT | `api.listenMqtt(callback)` |
+| `stopListenMqtt()` | Stop MQTT listening | `api.stopListenMqtt()` |
+| `listenNotification()` | Listen to notifications | `api.listenNotification(callback)` |
+| `sendTypingIndicator()` | Show typing indicator | `api.sendTypingIndicator(threadID)` |
+| `listen()` | Listen to all events | `api.listen(callback)` |
 
-7. I don't want all of these logging messages!
-    > You can use `api.setOptions` to silence the logging. You get the `api` object from `login` (see example above). Do
-    >
-    > ```js
-    > api.setOptions({
-    >     logLevel: "silent",
-    > });
-    > ```
+## Configuration
+| Method | Description | Example |
+|--------|-------------|---------|
+| `setOptions()` | Set API options | `api.setOptions({listenEvents: true})` |
+| `getOptions()` | Get current options | `const opts = api.getOptions()` |
+| `getCtx()` | Get bot context | `const ctx = api.getCtx()` |
+| `getAccess()` | Get access info | `const access = api.getAccess()` |
+| `getBotInitialData()` | Get initial data | `const data = api.getBotInitialData()` |
+| `getRegion()` | Get current region | `api.getRegion(callback)` |
+| `refreshFb_dtsg()` | Refresh security token | `api.refreshFb_dtsg(callback)` |
 
-<a name="projects-using-this-api"></a>
+## Security & Session
+| Method | Description | Example |
+|--------|-------------|---------|
+| `logout()` | Logout properly | `api.logout(callback)` |
+| `getAppState()` | Get session appstate | `const appstate = api.getAppState()` |
 
-## Projects using this API:
+## UI Customization
+| Method | Description | Example |
+|--------|-------------|---------|
+| `threadColors()` | Get available colors | `api.threadColors(callback)` |
 
--   [c3c](https://github.com/lequanglam/c3c) - A bot that can be customizable using plugins. Support Facebook & Discord.
+---
 
-## Projects using this API (original repository, facebook-chat-api):
-
--   [Messer](https://github.com/mjkaufer/Messer) - Command-line messaging for Facebook Messenger
--   [messen](https://github.com/tomquirk/messen) - Rapidly build Facebook Messenger apps in Node.js
--   [Concierge](https://github.com/concierge/Concierge) - Concierge is a highly modular, easily extensible general purpose chat bot with a built in package manager
--   [Marc Zuckerbot](https://github.com/bsansouci/marc-zuckerbot) - Facebook chat bot
--   [Marc Thuckerbot](https://github.com/bsansouci/lisp-bot) - Programmable lisp bot
--   [MarkovsInequality](https://github.com/logicx24/MarkovsInequality) - Extensible chat bot adding useful functions to Facebook Messenger
--   [AllanBot](https://github.com/AllanWang/AllanBot-Public) - Extensive module that combines the facebook api with firebase to create numerous functions; no coding experience is required to implement this.
--   [Larry Pudding Dog Bot](https://github.com/Larry850806/facebook-chat-bot) - A facebook bot you can easily customize the response
--   [fbash](https://github.com/avikj/fbash) - Run commands on your computer's terminal over Facebook Messenger
--   [Klink](https://github.com/KeNt178/klink) - This Chrome extension will 1-click share the link of your active tab over Facebook Messenger
--   [Botyo](https://github.com/ivkos/botyo) - Modular bot designed for group chat rooms on Facebook
--   [matrix-puppet-facebook](https://github.com/matrix-hacks/matrix-puppet-facebook) - A facebook bridge for [matrix](https://matrix.org)
--   [facebot](https://github.com/Weetbix/facebot) - A facebook bridge for Slack.
--   [Botium](https://github.com/codeforequity-at/botium-core) - The Selenium for Chatbots
--   [Messenger-CLI](https://github.com/AstroCB/Messenger-CLI) - A command-line interface for sending and receiving messages through Facebook Messenger.
--   [AssumeZero-Bot](https://github.com/AstroCB/AssumeZero-Bot) – A highly customizable Facebook Messenger bot for group chats.
--   [Miscord](https://github.com/Bjornskjald/miscord) - An easy-to-use Facebook bridge for Discord.
--   [chat-bridge](https://github.com/rexx0520/chat-bridge) - A Messenger, Telegram and IRC chat bridge.
--   [messenger-auto-reply](https://gitlab.com/theSander/messenger-auto-reply) - An auto-reply service for Messenger.
--   [BotCore](https://github.com/AstroCB/BotCore) – A collection of tools for writing and managing Facebook Messenger bots.
--   [mnotify](https://github.com/AstroCB/mnotify) – A command-line utility for sending alerts and notifications through Facebook Messenger.
+For more code examples and advanced usage, see `COMPLETE-API-DOCS.md` and `DOCS.md`.

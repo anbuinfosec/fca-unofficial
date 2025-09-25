@@ -1,10 +1,280 @@
-// Origin: NOCOM-BOT/mod_fbmsg_legacy
+// @anbuinfosec/fca-unofficial: Advanced TypeScript Definitions
+// Enhanced with modern types and better error handling
 
 declare module '@anbuinfosec/fca-unofficial' {
-    import type { Readable, Duplex, Transform } from "stream";
-    import type EventEmitter from "events";
+    import type { Readable, Duplex, Transform, EventEmitter } from "stream";
+    import type { EventEmitter as NodeEventEmitter } from "events";
 
     type ReadableStream = Readable | Duplex | Transform;
+    
+    // Enhanced Client Options
+    interface FcaClientOptions {
+        prefix?: string;
+        selfListen?: boolean;
+        listenEvents?: boolean;
+        updatePresence?: boolean;
+        autoMarkDelivery?: boolean;
+        autoMarkRead?: boolean;
+        safeMode?: boolean;
+        // rateLimitEnabled REMOVED for maximum Facebook account safety
+        mqttReconnectInterval?: number;
+        logLevel?: 'silent' | 'error' | 'warn' | 'info' | 'verbose';
+        performanceOptimization?: boolean;
+        cachingEnabled?: boolean;
+        databasePath?: string;
+        retryAttempts?: number;
+        circuitBreakerThreshold?: number;
+        heartbeatInterval?: number;
+        middlewareEnabled?: boolean;
+        maxSafetyMode?: boolean; // NEW: Maximum safety mode
+    }
+
+    // Performance Manager Types
+    interface PerformanceMetrics {
+        requestCount: number;
+        averageResponseTime: number;
+        errorRate: number;
+        cacheHitRate: number;
+        memoryUsage: number;
+        activeMqttConnections: number;
+    }
+
+    interface CacheOptions {
+        ttl?: number;
+        maxSize?: number;
+        strategy?: 'lru' | 'lfu' | 'fifo';
+    }
+
+    // Error Handling Types
+    interface fcaError extends Error {
+        code?: string;
+        statusCode?: number;
+        details?: any;
+        retryable?: boolean;
+        timestamp?: number;
+    }
+
+    interface RetryOptions {
+        maxAttempts?: number;
+        backoffStrategy?: 'linear' | 'exponential';
+        baseDelay?: number;
+        maxDelay?: number;
+    }
+
+    interface CircuitBreakerOptions {
+        failureThreshold?: number;
+        resetTimeout?: number;
+        monitoringPeriod?: number;
+    }
+
+    // MQTT Connection Types
+    interface MqttConnectionOptions {
+        autoReconnect?: boolean;
+        reconnectInterval?: number;
+        heartbeatInterval?: number;
+        maxReconnectAttempts?: number;
+        connectionTimeout?: number;
+        keepaliveInterval?: number;
+    }
+
+    interface MqttConnectionState {
+        isConnected: boolean;
+        reconnectCount: number;
+        lastHeartbeat: number;
+        connectionStartTime: number;
+        totalDowntime: number;
+    }
+
+    // Enhanced Message Structure
+    interface FcaMessage {
+        id: string;
+        content: string;
+        body: string;
+        author: fcaUser;
+        thread: fcaThread;
+        attachments: fcaAttachment[];
+        mentions: { [id: string]: string };
+        timestamp: number;
+        isGroup: boolean;
+        type: 'text' | 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'gif';
+        reactions: fcaReaction[];
+        replyTo?: FcaMessage;
+        isEdited: boolean;
+        editHistory: string[];
+        
+        // Methods
+        reply(content: string | MessageOptions): Promise<FcaMessage>;
+        react(emoji: string): Promise<void>;
+        edit(newContent: string): Promise<void>;
+        unsend(): Promise<void>;
+        forward(threadId: string): Promise<void>;
+        pin(): Promise<void>;
+        unpin(): Promise<void>;
+        markAsRead(): Promise<void>;
+        getThread(): Promise<fcaThread>;
+        getAuthor(): Promise<fcaUser>;
+    }
+
+    // Enhanced User Structure
+    interface fcaUser {
+        id: string;
+        name: string;
+        firstName?: string;
+        lastName?: string;
+        username?: string;
+        profileUrl?: string;
+        avatarUrl?: string;
+        isFriend: boolean;
+        isBlocked: boolean;
+        isOnline: boolean;
+        lastActive?: number;
+        bio?: string;
+        location?: string;
+        metadata: Record<string, any>;
+        
+        // Methods
+        sendMessage(content: string | MessageOptions): Promise<FcaMessage>;
+        addAsFriend(): Promise<void>;
+        block(): Promise<void>;
+        unblock(): Promise<void>;
+        getSharedThreads(): Promise<fcaThread[]>;
+        getProfilePicture(): Promise<string>;
+        changeBio(bio: string): Promise<void>;
+    }
+
+    // Enhanced Thread Structure
+    interface fcaThread {
+        id: string;
+        name?: string;
+        threadType: 'user' | 'group';
+        imageUrl?: string;
+        emoji?: string;
+        color?: string;
+        participants: fcaUser[];
+        participantCount: number;
+        isGroup: boolean;
+        isArchived: boolean;
+        isPinned: boolean;
+        isMuted: boolean;
+        lastMessage?: FcaMessage;
+        lastMessageTime?: number;
+        permissions: ThreadPermissions;
+        metadata: Record<string, any>;
+        
+        // Methods
+        sendMessage(content: string | MessageOptions): Promise<FcaMessage>;
+        getHistory(limit?: number, before?: number): Promise<FcaMessage[]>;
+        addUser(userId: string): Promise<void>;
+        removeUser(userId: string): Promise<void>;
+        changeImage(imageUrl: string): Promise<void>;
+        changeName(name: string): Promise<void>;
+        changeColor(color: string): Promise<void>;
+        changeEmoji(emoji: string): Promise<void>;
+        setTitle(title: string): Promise<void>;
+        archive(): Promise<void>;
+        unarchive(): Promise<void>;
+        pin(): Promise<void>;
+        unpin(): Promise<void>;
+        mute(): Promise<void>;
+        unmute(): Promise<void>;
+        markAsRead(): Promise<void>;
+        markAsDelivered(): Promise<void>;
+        getParticipants(): Promise<fcaUser[]>;
+        getAdmins(): Promise<fcaUser[]>;
+        makeAdmin(userId: string): Promise<void>;
+        removeAdmin(userId: string): Promise<void>;
+    }
+
+    // Message Options
+    interface MessageOptions {
+        body?: string;
+        attachment?: ReadableStream | string;
+        attachments?: (ReadableStream | string)[];
+        url?: string;
+        sticker?: string;
+        emoji?: string;
+        mentions?: { [id: string]: string };
+        location?: { latitude: number; longitude: number };
+        replyTo?: string;
+        isTyping?: boolean;
+    }
+
+    // Attachment Types
+    interface fcaAttachment {
+        id: string;
+        type: 'image' | 'video' | 'audio' | 'file' | 'location' | 'contact';
+        url: string;
+        filename?: string;
+        size?: number;
+        width?: number;
+        height?: number;
+        duration?: number;
+        thumbnailUrl?: string;
+        metadata: Record<string, any>;
+    }
+
+    // Reaction Types
+    interface fcaReaction {
+        emoji: string;
+        users: string[];
+        count: number;
+    }
+
+    // Thread Permissions
+    interface ThreadPermissions {
+        canSendMessages: boolean;
+        canAddUsers: boolean;
+        canRemoveUsers: boolean;
+        canChangeInfo: boolean;
+        canMakeAdmin: boolean;
+    }
+
+    // Client Class
+    class FcaClient extends NodeEventEmitter {
+        constructor(options?: FcaClientOptions);
+        
+        // Authentication
+        login(credentials: { appState: any[] } | { email: string; password: string }): Promise<IFCAU_API>;
+        logout(): Promise<void>;
+        
+        // Command System
+        loadCommands(directory: string): void;
+        registerCommand(name: string, handler: CommandHandler): void;
+        unregisterCommand(name: string): void;
+        
+        // Middleware System
+        use(middleware: Middleware): void;
+        
+        // Performance Management
+        getMetrics(): PerformanceMetrics;
+        clearCache(): void;
+        optimizePerformance(): void;
+        
+        // Events
+        on(event: 'ready', listener: (api: IFCAU_API, userID: string) => void): this;
+        on(event: 'message', listener: (message: FcaMessage) => void): this;
+        on(event: 'command', listener: (command: { name: string; args: string[]; message: FcaMessage }) => void): this;
+        on(event: 'error', listener: (error: fcaError) => void): this;
+        on(event: 'reconnect', listener: () => void): this;
+        on(event: 'disconnect', listener: () => void): this;
+        on(event: 'userOnline', listener: (user: fcaUser) => void): this;
+        on(event: 'userOffline', listener: (user: fcaUser) => void): this;
+        on(event: 'threadUpdated', listener: (thread: fcaThread) => void): this;
+        on(event: 'messageReaction', listener: (reaction: fcaReaction, message: FcaMessage) => void): this;
+        on(event: 'messageEdit', listener: (oldMessage: FcaMessage, newMessage: FcaMessage) => void): this;
+        on(event: 'messageUnsend', listener: (message: FcaMessage) => void): this;
+        on(event: 'typingStart', listener: (user: fcaUser, thread: fcaThread) => void): this;
+        on(event: 'typingStop', listener: (user: fcaUser, thread: fcaThread) => void): this;
+    }
+
+    // Command Handler Type
+    // Command Handler Type
+    type CommandHandler = (args: string[], message: FcaMessage, api: IFCAU_API) => Promise<void> | void;
+
+    // Middleware Type
+    type Middleware = (message: FcaMessage, next: () => void) => void;
+
+    // Login function overloads
     function login(credentials: Partial<{
         email: string,
         password: string,
@@ -78,18 +348,22 @@ declare module '@anbuinfosec/fca-unofficial' {
     export type IFCAU_API = {
         addUserToGroup: (userID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         changeAdminStatus: (threadID: string, adminIDs: string | string[], adminStatus: boolean, callback?: (err?: Error) => void) => Promise<void>,
-				changeApprovalMode: (approvalMode: 0 | 1, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
+		changeApprovalMode: (approvalMode: 0 | 1, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         changeArchivedStatus: (threadOrThreads: string | string[], archive: boolean, callback?: (err?: Error) => void) => Promise<void>,
         changeBlockedStatus: (userID: string, blocked: boolean, callback?: (err?: Error) => void) => Promise<void>,
+        changeBlockedStatusMqtt: (userID: string, status: boolean, type?: string, callback?: (err?: Error) => void) => Promise<void>,
         changeGroupImage: (image: ReadableStream, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         changeNickname: (nickname: string, threadID: string, pariticipantID: string, callback?: (err?: Error) => void) => Promise<void>,
         changeThreadColor: (color: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         changeThreadEmoji: (emoji: string | null, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         createNewGroup: (participantIDs: string[], groupTitle?: string, callback?: (err: Error, threadID: string) => void) => Promise<string>,
         createPoll: (title: string, threadID: string, options?: { [item: string]: boolean }, callback?: (err?: Error) => void) => Promise<void>,
+        createPollMqtt: (title: string, threadID: string, options?: { [item: string]: boolean }, callback?: (err?: Error) => void) => Promise<void>,
         deleteMessage: (messageOrMessages: string | string[], callback?: (err?: Error) => void) => Promise<void>,
         deleteThread: (threadOrThreads: string | string[], callback?: (err?: Error) => void) => Promise<void>,
+        editMessage: (text: string, messageID: string, callback?: (err?: Error) => void) => Promise<void>,
         forwardAttachment: (attachmentID: string, userOrUsers: string | string[], callback?: (err?: Error) => void) => Promise<void>,
+        forwardMessage: (messageID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         getAppState: () => any,
         getCurrentUserID: () => string,
         getEmojiUrl: (c: string, size: number, pixelRatio: number) => string,
@@ -112,14 +386,24 @@ declare module '@anbuinfosec/fca-unofficial' {
         markAsReadAll: (callback?: (err?: Error) => void) => Promise<void>,
         markAsSeen(seenTimestamp?: number, callback?: (err?: Error) => void): Promise<void>,
         muteThread: (threadID: string, muteSeconds: number, callback?: (err?: Error) => void) => Promise<void>,
+        pinMessage: (pinMode: boolean, messageID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         removeUserFromGroup: (userID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         resolvePhotoUrl: (photoID: string, callback?: (err: Error | null, url: string) => void) => Promise<string>,
         sendMessage: typeof sendMessage,
         sendTypingIndicator: (threadID: string, callback?: (err?: Error) => void) => Promise<void>,
+        sendTypingIndicatorMqtt: (isTyping: boolean, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         setMessageReaction: (reaction: string, messageID: string, callback?: (err?: Error) => void, forceCustomReaction?: boolean) => Promise<void>,
+        setMessageReactionMqtt: (reaction: string, messageID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
         setOptions: (options: Partial<IFCAU_Options>) => void,
+        setEditOptions: (opts: EditOptions) => void,
+        setBackoffOptions: (opts: { base?: number; max?: number; factor?: number; jitter?: number }) => void,
+        enableLazyPreflight: (enable?: boolean) => void,
+        getHealthMetrics: () => any,
+        getMemoryMetrics: () => { pendingEdits: number; pendingEditsDropped: number; pendingEditsExpired: number; outboundQueueDepth: number; groupQueueDroppedMessages: number; memoryGuardRuns: number; memoryGuardActions: number } | null,
         setTitle: (newTitle: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
-        unsendMessage: (messageID: string, callback?: (err?: Error) => void) => Promise<void>
+        setTheme: (threadID: string, themeID?: string, callback?: (err?: Error) => void) => Promise<void>,
+        unsendMessage: (messageID: string, callback?: (err?: Error) => void) => Promise<void>,
+        unsendMessageMqtt: (messageID: string, threadID: string, callback?: (err?: Error) => void) => Promise<void>,
     }
 
     export type IFCAU_ListenMessage =
@@ -302,13 +586,12 @@ declare module '@anbuinfosec/fca-unofficial' {
             time: number
         } | {
             type: "message_reaction",
+            threadID: string,
             messageID: string,
-            offlineThreadingID: string,
             reaction: string,
             senderID: string,
-            threadID: string,
-            timestamp: number,
-            userID: string
+            userID: string,
+            reactionTimestamp: number
         } | {
             type: "presence",
             statuses: number,
@@ -607,4 +890,144 @@ declare module '@anbuinfosec/fca-unofficial' {
             userID: string,
             name: string
         };
+
+    // Edit Options Type
+    export interface EditOptions {
+        maxEdits?: number;
+        editWindowMs?: number;
+        allowEditHistory?: boolean;
+        [key: string]: any;
+    }
+
+    // Enhanced Database Types
+    interface DatabaseOptions {
+        dbPath?: string;
+        cacheSize?: number;
+        journalMode?: 'DELETE' | 'TRUNCATE' | 'PERSIST' | 'MEMORY' | 'WAL' | 'OFF';
+        synchronous?: 'OFF' | 'NORMAL' | 'FULL' | 'EXTRA';
+    }
+
+    interface SessionData {
+        id: string;
+        userId?: string;
+        appState: any;
+        cookies?: any;
+        tokens?: any;
+        expiresAt?: number;
+        isActive?: boolean;
+        metadata?: Record<string, any>;
+    }
+
+    // Enhanced Performance Manager
+    class PerformanceManager {
+        constructor(options?: { cacheSize?: number; metricsRetention?: number });
+        
+        // Caching
+        setCache(key: string, value: any, ttl?: number): Promise<boolean>;
+        getCache(key: string): Promise<any>;
+        deleteCache(key: string): Promise<boolean>;
+        clearCache(): Promise<void>;
+        
+        // Rate Limiting DISABLED for maximum safety - no checkRateLimit method
+        
+        // Metrics
+        recordMetric(name: string, value: number, tags?: Record<string, string>): void;
+        getMetrics(): PerformanceMetrics;
+        
+        // Memory Management
+        optimizeMemory(): void;
+        getMemoryUsage(): { used: number; total: number; percentage: number };
+    }
+
+    // Enhanced Error Handler
+    class ErrorHandler {
+        constructor(options?: { 
+            retryOptions?: RetryOptions;
+            circuitBreakerOptions?: CircuitBreakerOptions;
+            fallbackStrategies?: Record<string, () => any>;
+        });
+        
+        handleError(error: Error, context?: string): Promise<any>;
+        retry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T>;
+        getFallback(context: string): () => any;
+        setFallback(context: string, fallback: () => any): void;
+        getErrorStats(): { 
+            totalErrors: number; 
+            errorsByType: Record<string, number>; 
+            circuitBreakerState: string;
+        };
+    }
+
+    // Enhanced MQTT Manager
+    class AdvancedMqttManager extends NodeEventEmitter {
+        constructor(options?: MqttConnectionOptions);
+        
+        connect(): Promise<void>;
+        disconnect(): Promise<void>;
+        reconnect(): Promise<void>;
+        isConnected(): boolean;
+        getConnectionState(): MqttConnectionState;
+        
+        // Message handling
+        sendMessage(topic: string, message: any): Promise<void>;
+        subscribe(topic: string, handler: (message: any) => void): void;
+        unsubscribe(topic: string): void;
+        
+        // Health monitoring
+        startHeartbeat(): void;
+        stopHeartbeat(): void;
+        getHealthStatus(): { 
+            isHealthy: boolean; 
+            lastHeartbeat: number; 
+            connectionUptime: number;
+        };
+    }
+
+    // Enhanced Database
+    class EnhancedDatabase extends NodeEventEmitter {
+        constructor(options?: DatabaseOptions);
+        
+        initialize(): Promise<void>;
+        close(): Promise<void>;
+        
+        // User management
+        saveUser(user: Partial<fcaUser>): Promise<fcaUser>;
+        getUser(userId: string): Promise<fcaUser | null>;
+        
+        // Thread management
+        saveThread(thread: Partial<fcaThread>): Promise<fcaThread>;
+        getThread(threadId: string): Promise<fcaThread | null>;
+        
+        // Message management
+        saveMessage(message: Partial<FcaMessage>): Promise<FcaMessage>;
+        getMessages(threadId: string, limit?: number, before?: number): Promise<FcaMessage[]>;
+        
+        // Session management
+        saveSession(session: SessionData): Promise<SessionData>;
+        getActiveSession(userId?: string): Promise<SessionData | null>;
+        
+        // Cache management
+        setCache(key: string, value: any, ttl?: number): Promise<boolean>;
+        getCache(key: string): Promise<any>;
+        
+        // Event logging
+        logEvent(eventType: string, data?: Record<string, any>): Promise<void>;
+        
+        // Maintenance
+        cleanup(): Promise<void>;
+    }
+
+    // Compatibility Layer
+    class CompatibilityLayer {
+        constructor(api: IFCAU_API);
+        
+        // @anbuinfosec/fca-unofficial compatibility utilities
+        createWrapper(packageName: '@anbuinfosec/fca-unofficial'): any;
+        createLegacyApi(): any;
+        autoAdapt(api: any): any;
+        
+        // Middleware
+        addInterceptor(type: 'request' | 'response', interceptor: (data: any) => any): void;
+        removeInterceptor(type: 'request' | 'response', interceptor: (data: any) => any): void;
+    }
 }

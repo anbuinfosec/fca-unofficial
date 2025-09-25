@@ -1,7 +1,7 @@
-"use strict";
+// @anbuinfosec/fca-unofficial: Advanced and Safe Facebook Chat API
+// getThreadListDeprecated.js - Deprecated thread list fetch
 
-var utils = require("../utils");
-var log = require("npmlog");
+const utils = require("../utils");
 
 module.exports = function(defaultFuncs, api, ctx) {
   return function getThreadList(start, end, type, callback) {
@@ -39,7 +39,7 @@ module.exports = function(defaultFuncs, api, ctx) {
 
     if (end <= start) end = start + 20;
 
-    var form = {
+    const form = {
       client: "mercury"
     };
 
@@ -49,27 +49,6 @@ module.exports = function(defaultFuncs, api, ctx) {
     if (ctx.globalOptions.pageID) {
       form.request_user_id = ctx.globalOptions.pageID;
     }
-
-    defaultFuncs
-      .post(
-        "https://www.facebook.com/ajax/mercury/threadlist_info.php",
-        ctx.jar,
-        form
-      )
-      .then(utils.parseAndCheckLogin(ctx, defaultFuncs))
-      .then(function(resData) {
-        if (resData.error) {
-          throw resData;
-        }
-        log.verbose("getThreadList", JSON.stringify(resData.payload.threads));
-        return callback(
-          null,
-          (resData.payload.threads || []).map(utils.formatThread)
-        );
-      })
-      .catch(function(err) {
-        log.error("getThreadList", err);
-        return callback(err);
-      });
+    // ...existing code...
   };
 };
